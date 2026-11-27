@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Per-tab favicons, automatic `.webp`/`.avif` artwork transcoding via `OffscreenCanvas`, 20s MV3 service worker heartbeat, and `100%` default volume for newly opened tabs.
 - **Collapsible Lock-Screen Media Player**: Expandable (`▾`/`▴`) media drawer per playable app (WinRT SMTC) and browser tab (`navigator.mediaSession`) featuring rounded cover art, title/artist, vector transport buttons (`Previous`, `Play/Pause`, `Next`), `LIVE` indicator, and commit-on-release timeline scrubbing.
 - **Global Hotkeys & System Integration**: In-place hotkey recorder (`Toggle Mixer` default `Ctrl + Shift + V`, `Master Mute`, `Active Window Mute`), silent `--tray` Windows autostart, desktop-scoped single-instance wakeup, and multi-resolution app icon.
-- **CoreAudioTray Profile Bridge**: Reads/syncs `%AppData%\CoreAudioTray\config.json` for one-click Headphones / Speakers+Mic switching and split Output / Microphone selection via `IPolicyConfig`, preserving the locked profile across sessions.
+- **Built-In Audio Device Profiles**: Self-contained output & microphone profile configuration in **Settings** (`%LocalAppData%\VolumeMixer\settings.json`), with one-click Headphones / Speakers+Mic switching and split Output / Microphone selection via `IPolicyConfig`, restoring the active profile across sessions.
 - **UI Animations**: `CubicEase` window open/close scale & slide transitions, smooth drawer expansion/collapse, panel crossfade/slide, animated toggle switch, and button hover/press micro-interactions.
 
 ### Performance & Reliability

@@ -14,7 +14,7 @@
     <Version>1.0.0</Version>
     <Authors>Sema (Tryharder782)</Authors>
     <Product>Volume Mixer</Product>
-    <Description>Minimalist Windows 11 Acrylic/macOS-style volume mixer overlay with per-tab Chromium audio control, lock-screen media player, and CoreAudioTray profile bridge.</Description>
+    <Description>Minimalist Windows 11 Acrylic/macOS-style volume mixer overlay with per-tab Chromium audio control, lock-screen media player, and built-in audio device profile switching.</Description>
     <RepositoryUrl>https://github.com/Tryharder782/windows-volume-mixer</RepositoryUrl>
     <PublishSingleFile>false</PublishSingleFile>
   </PropertyGroup>

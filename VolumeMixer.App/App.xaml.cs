@@ -17,7 +17,7 @@ public partial class App : System.Windows.Application
     private SettingsService? _settingsService;
     private VolumeStoreService? _volumeStore;
     private AudioService? _audioService;
-    private AudioDeviceBridgeService? _deviceBridge;
+    private AudioDeviceService? _audioDevices;
     private TabWebSocketServer? _tabServer;
     private HotkeyService? _hotkeyService;
     private TrayService? _trayService;
@@ -44,12 +44,12 @@ public partial class App : System.Windows.Application
         _settingsService = new SettingsService();
         _volumeStore = new VolumeStoreService();
         _audioService = new AudioService(_volumeStore);
-        _deviceBridge = new AudioDeviceBridgeService(_volumeStore);
-        _deviceBridge.RestoreLockedProfileOnStartup();
+        _audioDevices = new AudioDeviceService(_settingsService);
+        _audioDevices.RestoreProfileOnStartup();
         _tabServer = new TabWebSocketServer(_settingsService.Current.WebSocketPort);
         _tabServer.Start();
 
-        _flyoutWindow = new FlyoutWindow(_audioService, _deviceBridge, _tabServer, _settingsService);
+        _flyoutWindow = new FlyoutWindow(_audioService, _audioDevices, _tabServer, _settingsService);
 
         _hotkeyService = new HotkeyService();
         _hotkeyService.ApplySettings(_settingsService.Current);
@@ -90,7 +90,7 @@ public partial class App : System.Windows.Application
         _trayService?.Dispose();
         _hotkeyService?.Dispose();
         _tabServer?.Dispose();
-        _deviceBridge?.Dispose();
+        _audioDevices?.Dispose();
         _audioService?.Dispose();
         _volumeStore?.Dispose();
         _singleInstanceMutex?.Dispose();

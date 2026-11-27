@@ -381,7 +381,7 @@
                             </Button>
                         </Grid>
 
-                        <!-- Expandable Output / Input Picker (CoreAudioTray profiles only) -->
+                        <!-- Expandable Output / Input Picker (Configured profiles) -->
                         <Grid x:Name="DevicesDrawer" Visibility="Collapsed" Opacity="0" Margin="0,9,0,0">
                             <Grid.LayoutTransform>
                                 <ScaleTransform x:Name="DevicesDrawerScale" ScaleY="0"/>
@@ -978,6 +978,62 @@
                                           Checked="StartupSwitch_Changed"
                                           Unchecked="StartupSwitch_Changed"/>
                             </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Audio Devices / Profiles Card -->
+                    <Border Background="#16FFFFFF"
+                            BorderBrush="#1EFFFFFF"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="12,10"
+                            Margin="0,0,0,10">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="ПРОФИЛИ АУДИОУСТРОЙСТВ"
+                                           FontSize="10"
+                                           FontWeight="SemiBold"
+                                           Foreground="#7AFFFFFF"
+                                           VerticalAlignment="Center"/>
+                                <Button Grid.Column="1"
+                                        Style="{StaticResource IconButtonStyle}"
+                                        Width="22" Height="22"
+                                        Click="RefreshDeviceCombosBtn_Click"
+                                        ToolTip="Обновить список устройств">
+                                    <TextBlock Text="↻" FontSize="11"/>
+                                </Button>
+                            </Grid>
+
+                            <TextBlock Text="🎧 Выход (Наушники)" FontSize="11" Foreground="#B8FFFFFF" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="HeadsetOutputCombo"
+                                      Style="{StaticResource MacComboBoxStyle}"
+                                      SelectedValuePath="Id"
+                                      SelectionChanged="DeviceProfileCombo_SelectionChanged"
+                                      Margin="0,0,0,8"/>
+
+                            <TextBlock Text="🔊 Выход (Спикеры)" FontSize="11" Foreground="#B8FFFFFF" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="SpeakerOutputCombo"
+                                      Style="{StaticResource MacComboBoxStyle}"
+                                      SelectedValuePath="Id"
+                                      SelectionChanged="DeviceProfileCombo_SelectionChanged"
+                                      Margin="0,0,0,8"/>
+
+                            <TextBlock Text="🎧 Вход (Микрофон наушников)" FontSize="11" Foreground="#B8FFFFFF" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="HeadsetMicCombo"
+                                      Style="{StaticResource MacComboBoxStyle}"
+                                      SelectedValuePath="Id"
+                                      SelectionChanged="DeviceProfileCombo_SelectionChanged"
+                                      Margin="0,0,0,8"/>
+
+                            <TextBlock Text="🎙 Вход (Настольный микрофон)" FontSize="11" Foreground="#B8FFFFFF" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="DesktopMicCombo"
+                                      Style="{StaticResource MacComboBoxStyle}"
+                                      SelectedValuePath="Id"
+                                      SelectionChanged="DeviceProfileCombo_SelectionChanged"/>
                         </StackPanel>
                     </Border>
 

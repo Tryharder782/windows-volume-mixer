@@ -9,7 +9,7 @@
 [![Manifest V3](https://img.shields.io/badge/Chromium-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white)](VolumeMixer.Extension/manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A lightweight, minimalist Windows 11 volume mixer flyout inspired by macOS Control Center. Adjust per-application WASAPI volume, independently control individual Chromium browser tabs, scrub media from a collapsible lock-screen player drawer, and switch audio profiles via an optional `CoreAudioTray` bridge — without stealing focus or raising the taskbar over borderless fullscreen games.
+A lightweight, minimalist Windows 11 volume mixer flyout inspired by macOS Control Center. Adjust per-application WASAPI volume, independently control individual Chromium browser tabs, scrub media from a collapsible lock-screen player drawer, and switch saved output/microphone profiles in one click — without stealing focus or raising the taskbar over borderless fullscreen games.
 
 ---
 
@@ -25,7 +25,7 @@ A lightweight, minimalist Windows 11 volume mixer flyout inspired by macOS Contr
   - Keeps MV3 service workers alive via a 20s ping/pong heartbeat and starts every newly opened tab at `100%` volume.
 - **Collapsible Lock-Screen Media Player (`▾` / `▴`)**: Hidden by default on every playable app (via Windows SMTC) and browser tab (via `navigator.mediaSession`). Expands to reveal album/video artwork, title, artist/channel, crisp vector `Prev / Play-Pause / Next` buttons, `LIVE` indicator for streams, and commit-on-release timeline scrubbing.
 - **Customizable Global Hotkeys & Autostart**: Built-in hotkey recorder for Toggle Mixer (default `Ctrl + Shift + V`), Master Mute, and Active Window Mute, plus silent `--tray` Windows autostart and desktop-scoped single-instance wakeup.
-- **`CoreAudioTray` Profile Bridge**: Reads `%AppData%\CoreAudioTray\config.json` to provide one-click **Headphones** / **Speakers** profile switching and a split **Output / Microphone** selector using `IPolicyConfig`, with locked profile restoration on startup.
+- **Built-In Audio Device Profiles**: Configure your preferred Headphones / Speakers outputs and Headset / Desktop microphones directly in **Settings**, then switch profiles in one click or split-select **Output / Microphone** using `IPolicyConfig` with automatic startup profile restoration.
 - **Low Resource Footprint**: Zero background UI polling timers when minimized to the tray.
 
 ---
@@ -38,11 +38,11 @@ flowchart LR
         UI["FlyoutWindow (Acrylic / Lock-Screen Drawer)"]
         Audio["AudioService (NAudio WASAPI + VolumeStore)"]
         SMTC["MediaControlService (WinRT SMTC)"]
-        Bridge["AudioDeviceBridgeService (CoreAudioTray + PolicyConfig)"]
+        Devices["AudioDeviceService (Audio Profiles + PolicyConfig)"]
         WS["TabWebSocketServer (127.0.0.1:49152)"]
         UI --> Audio
         UI --> SMTC
-        UI --> Bridge
+        UI --> Devices
         UI --> WS
     end
 
@@ -95,9 +95,8 @@ dotnet publish VolumeMixer.App/VolumeMixer.App.csproj -c Release -r win-x64 -p:P
 
 | File | Purpose |
 | :--- | :--- |
-| `%LocalAppData%\VolumeMixer\settings.json` | Global hotkeys, backdrop mode (`Acrylic` / `Mica`), `RunAtStartup`, `WebSocketPort` (`49152`). |
-| `%LocalAppData%\VolumeMixer\volumes.json` | Saved per-application volume/mute states and `LockedProfile` (`headset` / `speakers`). |
-| `%AppData%\CoreAudioTray\config.json` | Optional external profile config read/synced by the `CoreAudioTray` device bridge. |
+| `%LocalAppData%\VolumeMixer\settings.json` | Global hotkeys, backdrop mode (`Acrylic` / `Mica`), `RunAtStartup`, `WebSocketPort` (`49152`), and saved `AudioProfiles` (`HeadsetOutputId`, `SpeakerOutputId`, `HeadsetMicId`, `DesktopMicId`, `ActiveProfile`). |
+| `%LocalAppData%\VolumeMixer\volumes.json` | Saved per-application volume and mute states across sessions. |
 
 ---
 

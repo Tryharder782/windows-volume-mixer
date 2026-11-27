@@ -38,6 +38,15 @@ public sealed class HotkeyBinding
     };
 }
 
+public sealed class AudioProfilesSettings
+{
+    public string? HeadsetOutputId { get; set; }
+    public string? SpeakerOutputId { get; set; }
+    public string? HeadsetMicId { get; set; }
+    public string? DesktopMicId { get; set; }
+    public string? ActiveProfile { get; set; } // "headset" | "speakers"
+}
+
 public sealed class AppSettings
 {
     public HotkeyBinding ToggleMixerHotkey { get; set; } = new()
@@ -52,4 +61,5 @@ public sealed class AppSettings
     public string BackdropMode { get; set; } = "Acrylic"; // "Acrylic" or "Mica"
     public bool RunAtStartup { get; set; } = false;
     public int WebSocketPort { get; set; } = 49152;
+    public AudioProfilesSettings AudioProfiles { get; set; } = new();
 }

@@ -11,7 +11,6 @@ public sealed class SavedVolume
 
 public sealed class VolumeStoreData
 {
-    public string? LockedProfile { get; set; }
     public Dictionary<string, SavedVolume> Apps { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
@@ -35,24 +34,6 @@ public sealed class VolumeStoreService : IDisposable
         _filePath = Path.Combine(dir, "volumes.json");
         _data = Load();
         _saveTimer = new System.Threading.Timer(_ => Flush(), null, Timeout.Infinite, Timeout.Infinite);
-    }
-
-    public string? GetLockedProfile()
-    {
-        lock (_lock)
-        {
-            return _data.LockedProfile;
-        }
-    }
-
-    public void SetLockedProfile(string? profile)
-    {
-        lock (_lock)
-        {
-            _data.LockedProfile = profile;
-        }
-
-        ScheduleSave();
     }
 
     public bool TryGetAppVolume(string processName, out SavedVolume? saved)

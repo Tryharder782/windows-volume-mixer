@@ -19,7 +19,7 @@ namespace VolumeMixer.Views;
 public partial class FlyoutWindow : Window
 {
     private readonly AudioService _audioService;
-    private readonly AudioDeviceBridgeService _deviceBridge;
+    private readonly AudioDeviceService _audioDevices;
     private readonly TabWebSocketServer _tabServer;
     private readonly SettingsService _settingsService;
     private readonly DispatcherTimer _refreshTimer;
@@ -30,6 +30,7 @@ public partial class FlyoutWindow : Window
 
     private DateTime _lastTickUtc = DateTime.UtcNow;
     private bool _suppressMasterEvents;
+    private bool _suppressDeviceComboEvents;
     private bool _isClosingAnimated;
     private bool _isShowingSettings;
     private string? _recordingTarget;
@@ -39,14 +40,14 @@ public partial class FlyoutWindow : Window
 
     public FlyoutWindow(
         AudioService audioService,
-        AudioDeviceBridgeService deviceBridge,
+        AudioDeviceService audioDevices,
         TabWebSocketServer tabServer,
         SettingsService settingsService)
     {
         InitializeComponent();
 
         _audioService = audioService;
-        _deviceBridge = deviceBridge;
+        _audioDevices = audioDevices;
         _tabServer = tabServer;
         _settingsService = settingsService;
 
@@ -141,7 +142,7 @@ public partial class FlyoutWindow : Window
         _outsideClickHook?.Dispose();
         _outsideClickHook = Win32Interop.InstallOutsideClickHook(this, () =>
         {
-            if (_recordingTarget == null)
+            if (_recordingTarget == null && !IsAnyDeviceDropdownOpen())
             {
                 HideAnimated();
             }
@@ -433,34 +434,41 @@ public partial class FlyoutWindow : Window
         }
     }
 
+    private bool IsAnyDeviceDropdownOpen() =>
+        HeadsetOutputCombo.IsDropDownOpen
+        || SpeakerOutputCombo.IsDropDownOpen
+        || HeadsetMicCombo.IsDropDownOpen
+        || DesktopMicCombo.IsDropDownOpen;
+
     private void RefreshDevicesUi()
     {
-        _deviceBridge.ReloadConfig();
-        bool hasProfiles = _deviceBridge.HasCoreAudioProfiles;
+        bool hasProfiles = _audioDevices.HasAnyProfileConfigured;
         ProfileSwitchBar.Visibility = hasProfiles ? Visibility.Visible : Visibility.Collapsed;
         DevicesDrawerBtn.Visibility = hasProfiles ? Visibility.Visible : Visibility.Collapsed;
+        HeadsetProfileBtn.Visibility = _audioDevices.HasHeadsetProfile ? Visibility.Visible : Visibility.Collapsed;
+        SpeakersProfileBtn.Visibility = _audioDevices.HasSpeakersProfile ? Visibility.Visible : Visibility.Collapsed;
 
-        bool isHeadset = string.Equals(_deviceBridge.ActiveProfile, "headset", StringComparison.OrdinalIgnoreCase);
+        bool isHeadset = string.Equals(_audioDevices.ActiveProfile, "headset", StringComparison.OrdinalIgnoreCase);
         HeadsetProfileBtn.Background = new SolidColorBrush(isHeadset ? Color.FromArgb(0x36, 0xFF, 0xFF, 0xFF) : Color.FromArgb(0x14, 0xFF, 0xFF, 0xFF));
         SpeakersProfileBtn.Background = new SolidColorBrush(!isHeadset ? Color.FromArgb(0x36, 0xFF, 0xFF, 0xFF) : Color.FromArgb(0x14, 0xFF, 0xFF, 0xFF));
 
         if (DevicesDrawer.Visibility == Visibility.Visible)
         {
-            OutputsList.ItemsSource = _deviceBridge.GetProfileOutputs();
-            InputsList.ItemsSource = _deviceBridge.GetProfileInputs();
+            OutputsList.ItemsSource = _audioDevices.GetProfileOutputs();
+            InputsList.ItemsSource = _audioDevices.GetProfileInputs();
         }
     }
 
     private void HeadsetProfileBtn_Click(object sender, RoutedEventArgs e)
     {
-        _deviceBridge.SwitchToHeadset();
+        _audioDevices.SwitchToHeadset();
         RefreshDevicesUi();
         RefreshAudioState(lightweight: false);
     }
 
     private void SpeakersProfileBtn_Click(object sender, RoutedEventArgs e)
     {
-        _deviceBridge.SwitchToSpeakers();
+        _audioDevices.SwitchToSpeakers();
         RefreshDevicesUi();
         RefreshAudioState(lightweight: false);
     }
@@ -503,7 +511,7 @@ public partial class FlyoutWindow : Window
     {
         if (sender is Button { Tag: string id })
         {
-            _deviceBridge.SetDefaultDevice(id);
+            _audioDevices.SetDefaultDevice(id);
             RefreshDevicesUi();
             RefreshAudioState(lightweight: false);
         }
@@ -513,7 +521,7 @@ public partial class FlyoutWindow : Window
     {
         if (sender is Button { Tag: string id })
         {
-            _deviceBridge.SetDefaultDevice(id);
+            _audioDevices.SetDefaultDevice(id);
             RefreshDevicesUi();
         }
     }
@@ -597,7 +605,75 @@ public partial class FlyoutWindow : Window
 
         CopyExtPathBtn.Content = "Копировать путь к расширению";
         UpdateExtensionStatus();
+        if (_isShowingSettings)
+        {
+            LoadDeviceProfileCombos();
+        }
     }
+
+    private void LoadDeviceProfileCombos()
+    {
+        var outputs = _audioDevices.GetAllOutputs();
+        var inputs = _audioDevices.GetAllInputs();
+        var profiles = _settingsService.Current.AudioProfiles;
+
+        _suppressDeviceComboEvents = true;
+        try
+        {
+            PopulateDeviceCombo(HeadsetOutputCombo, outputs, profiles.HeadsetOutputId);
+            PopulateDeviceCombo(SpeakerOutputCombo, outputs, profiles.SpeakerOutputId);
+            PopulateDeviceCombo(HeadsetMicCombo, inputs, profiles.HeadsetMicId);
+            PopulateDeviceCombo(DesktopMicCombo, inputs, profiles.DesktopMicId);
+        }
+        finally
+        {
+            _suppressDeviceComboEvents = false;
+        }
+    }
+
+    private static void PopulateDeviceCombo(System.Windows.Controls.ComboBox combo, List<AudioEndpointOption> devices, string? savedId)
+    {
+        var items = new List<AudioEndpointOption>(devices.Count + 2)
+        {
+            new() { Id = string.Empty, Name = "— Не выбрано —" }
+        };
+        items.AddRange(devices);
+
+        if (!string.IsNullOrWhiteSpace(savedId)
+            && !devices.Any(d => string.Equals(d.Id, savedId, StringComparison.OrdinalIgnoreCase)))
+        {
+            items.Add(new AudioEndpointOption { Id = savedId, Name = "(Устройство не подключено)" });
+        }
+
+        combo.ItemsSource = items;
+        combo.SelectedValue = string.IsNullOrWhiteSpace(savedId) ? string.Empty : savedId;
+    }
+
+    private void RefreshDeviceCombosBtn_Click(object sender, RoutedEventArgs e)
+    {
+        LoadDeviceProfileCombos();
+    }
+
+    private void DeviceProfileCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressDeviceComboEvents) return;
+
+        var profiles = _settingsService.Current.AudioProfiles;
+        if (sender == HeadsetOutputCombo)
+            profiles.HeadsetOutputId = NullIfEmpty(HeadsetOutputCombo.SelectedValue as string);
+        else if (sender == SpeakerOutputCombo)
+            profiles.SpeakerOutputId = NullIfEmpty(SpeakerOutputCombo.SelectedValue as string);
+        else if (sender == HeadsetMicCombo)
+            profiles.HeadsetMicId = NullIfEmpty(HeadsetMicCombo.SelectedValue as string);
+        else if (sender == DesktopMicCombo)
+            profiles.DesktopMicId = NullIfEmpty(DesktopMicCombo.SelectedValue as string);
+
+        _settingsService.Save();
+        RefreshDevicesUi();
+    }
+
+    private static string? NullIfEmpty(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value;
 
     private void UpdateExtensionStatus()
     {
