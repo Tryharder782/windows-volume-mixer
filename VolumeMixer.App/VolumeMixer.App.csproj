@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows10.0.22621.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>VolumeMixer</AssemblyName>
+    <RootNamespace>VolumeMixer</RootNamespace>
+    <ApplicationIcon>Assets\VolumeMixer.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <Authors>Sema (Tryharder782)</Authors>
+    <Product>Volume Mixer</Product>
+    <Description>Minimalist Windows 11 Acrylic/macOS-style volume mixer overlay with per-tab Chromium audio control, lock-screen media player, and CoreAudioTray profile bridge.</Description>
+    <RepositoryUrl>https://github.com/Tryharder782/windows-volume-mixer</RepositoryUrl>
+    <PublishSingleFile>false</PublishSingleFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio.Wasapi" Version="2.2.1" />
+  </ItemGroup>
+
+</Project>
