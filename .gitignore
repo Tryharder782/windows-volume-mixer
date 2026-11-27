@@ -1,0 +1,21 @@
+# Build artifacts
+bin/
+obj/
+publish/
+dist/
+
+# IDE & user files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.log
+
+# Packages & archives
+*.zip
+*.nupkg
+
+# OS junk
+Thumbs.db
+Desktop.ini
