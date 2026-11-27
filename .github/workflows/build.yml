@@ -1,0 +1,40 @@
+name: Build & Validate
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build solution
+        run: dotnet build VolumeMixer.sln -c Release
+
+      - name: Publish single-file executable
+        run: dotnet publish VolumeMixer.App/VolumeMixer.App.csproj -c Release -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --self-contained false -o dist/publish
+
+      - name: Validate extension scripts & manifest
+        run: |
+          node --check VolumeMixer.Extension/background.js
+          node --check VolumeMixer.Extension/content.js
+          node --check VolumeMixer.Extension/page_bridge.js
+          node -e "JSON.parse(require('fs').readFileSync('VolumeMixer.Extension/manifest.json','utf8'))"
